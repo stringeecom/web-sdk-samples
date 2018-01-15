@@ -1,27 +1,27 @@
 
-var client2;
+var client;
 var fromNumber = 'FROM_YOUR_NUMBER';
 var call;
 
 $(document).ready(function () {
-	client2 = new StringeeClient();
+	client = new StringeeClient();
 
-	client2.connect(access_token);
+	client.connect(access_token);
 
-	client2.on('connect', function () {
+	client.on('connect', function () {
 		console.log('++++++++++++++ connected to StringeeServer');
 	});
 
-	client2.on('authen', function (res) {
+	client.on('authen', function (res) {
 		console.log('authen', res);
 		$('#loggedUserId').html(res.userId);
 	});
 
-	client2.on('disconnect', function () {
+	client.on('disconnect', function () {
 		console.log('++++++++++++++ disconnected: ' + this.test);
 	});
 
-	client2.on('incomingcall', function (incomingcall) {
+	client.on('incomingcall', function (incomingcall) {
 		call = incomingcall;
 		settingCallEvent(incomingcall);
 
@@ -46,7 +46,7 @@ $(document).ready(function () {
 function testMakeCall(videocall) {
 	console.log('make call, videocall: ' + videocall);
 //				var videoCall = false;
-	call = new StringeeCall(client2, fromNumber, $('#callTo').val(), videocall);
+	call = new StringeeCall(client, fromNumber, $('#callTo').val(), videocall);
 
 //	call.videoResolution = {width: 1280, height: 720};
 
@@ -65,7 +65,6 @@ function settingCallEvent(call1) {
 	});
 
 	call1.on('addlocalstream', function (stream) {
-//					console.log('addlocalstream ', stream);
 		// reset srcObject to work around minor bugs in Chrome and Edge.
 		localVideo.srcObject = null;
 		localVideo.srcObject = stream;
@@ -73,6 +72,8 @@ function settingCallEvent(call1) {
 
 	call1.on('state', function (state) {
 		console.log('state ', state);
+		var reason = state.reason;
+		$('#callStatus').html(reason);
 	});
 
 	call1.on('info', function (info) {

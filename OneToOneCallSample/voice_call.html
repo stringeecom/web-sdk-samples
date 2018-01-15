@@ -9,30 +9,30 @@
 		<script type="text/javascript" src="js/StringeeSDK-1.2.0.js"></script>
 
 		<script type="text/javascript">
-			var client2;
+			var client;
 			var fromNumber = 'FROM_YOUR_NUMBER';
 			var access_token = "YOUR_ACCESS_TOKEN";
 			var call;
 
 			$(document).ready(function () {
-				client2 = new StringeeClient();
+				client = new StringeeClient();
 
-				client2.connect(access_token);
+				client.connect(access_token);
 
-				client2.on('connect', function () {
+				client.on('connect', function () {
 					console.log('++++++++++++++ connected to StringeeServer');
 				});
 
-				client2.on('authen', function (res) {
+				client.on('authen', function (res) {
 					console.log('authen', res);
 					$('#loggedUserId').html(res.userId);
 				});
 
-				client2.on('disconnect', function () {
+				client.on('disconnect', function () {
 					console.log('++++++++++++++ disconnected');
 				});
 
-				client2.on('incomingcall', function (incomingcall) {
+				client.on('incomingcall', function (incomingcall) {
 					call = incomingcall;
 					settingCallEvent(incomingcall);
 
@@ -57,7 +57,7 @@
 			});
 
 			function testMakeCall() {
-				call = new StringeeCall(client2, fromNumber, $('#callTo').val());
+				call = new StringeeCall(client, fromNumber, $('#callTo').val());
 
 				settingCallEvent(call);
 
@@ -71,7 +71,6 @@
 				});
 
 				call1.on('addremotestream', function (stream) {
-//					console.log('remoteStreamAdded ', stream);
 					// reset srcObject to work around minor bugs in Chrome and Edge.
 					remoteVideo.srcObject = null;
 					remoteVideo.srcObject = stream;
@@ -79,6 +78,8 @@
 
 				call1.on('state', function (state) {
 					console.log('state ', state);
+					var reason = state.reason;
+					$('#callStatus').html(reason);
 				});
 			}
 
