@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Stringee video call test</title>
+		<meta charset="utf-8">
+
+		<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="js/socket.io-2.0.3.js"></script>
+		<script type="text/javascript" src="js/StringeeSDK-1.2.0.js"></script>
+
+		<script type="text/javascript">
+			var client2;
+			var fromNumber = 'FROM_YOUR_NUMBER';
+			var username = 'user_300';
+			var call;
+
+			$(document).ready(function () {
+				var getTokenUrl = 'https://v1.stringee.com/samples_and_docs/access_token/gen_access_token.php?userId=' + username;
+				$.getJSON(getTokenUrl, function (res) {
+					var access_token = res.access_token;
+
+					client2 = new StringeeClient();
+
+					client2.connect(access_token);
+
+					client2.on('connect', function () {
+						console.log('++++++++++++++ connected to StringeeServer');
+					});
+
+					client2.on('authen', function (res) {
+						console.log('authen', res);
+						$('#loggedUserId').html(res.userId);
+					});
+
+					client2.on('disconnect', function () {
+						console.log('++++++++++++++ disconnected');
+					});
+
+					client2.on('incomingcall', function (incomingcall) {
+						call = incomingcall;
+						settingCallEvent(incomingcall);
+
+						var answer = confirm('Incoming call from: ' + incomingcall.fromNumber + ', do you want to answer?');
+
+						if (answer) {
+							call.answer(function (res) {
+								console.log('answer res', res);
+							});
+						} else {
+							call.reject(function (res) {
+								console.log('reject res', res);
+							});
+						}
+
+						console.log('++++++++++++++ incomingcall', incomingcall);
+					});
+				});
+
+
+				//+++++++event++++++++
+
+			});
+
+			function testMakeCall() {
+				call = new StringeeCall(client2, fromNumber, $('#callTo').val());
+
+				settingCallEvent(call);
+
+				call.makeCall(function (res) {
+					console.log('make call callback: ' + JSON.stringify(res));
+				});
+			}
+
+			function settingCallEvent(call1) {
+				call1.on('addlocalstream', function (stream) {
+				});
+
+				call1.on('addremotestream', function (stream) {
+//					console.log('remoteStreamAdded ', stream);
+					// reset srcObject to work around minor bugs in Chrome and Edge.
+					remoteVideo.srcObject = null;
+					remoteVideo.srcObject = stream;
+				});
+
+				call1.on('state', function (state) {
+					console.log('state ', state);
+				});
+			}
+
+			function testHangupCall() {
+				remoteVideo.srcObject = null;
+
+				call.hangup(function (res) {
+					console.log('hangup res', res);
+				});
+			}
+
+		</script>
+
+
+	</head>
+
+	<body>
+
+		<div>
+			<input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="userId or number" value="">
+
+			<button id="callBtn" onclick="testMakeCall()">Call</button>
+			<button id="hangupBtn" onclick="testHangupCall()">Hangup</button>
+		</div>
+
+		<div>
+			<br/>
+			Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
+		</div>
+
+		<div>
+			<br/>
+			Call status: <span id="callStatus" style="color: red">Not started</span>
+		</div>
+
+		<div>
+			<video id="remoteVideo" autoplay style="width: 350px"></video>
+		</div>
+
+	</body>
+
+</html>
