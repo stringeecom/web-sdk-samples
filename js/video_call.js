@@ -4,52 +4,43 @@ var fromNumber = 'FROM_YOUR_NUMBER';
 var call;
 
 $(document).ready(function () {
-	var getTokenUrl = 'https://v1.stringee.com/samples_and_docs/access_token/gen_access_token.php?userId=' + username;
-	$.getJSON(getTokenUrl, function (res) {
-		var access_token = res.access_token;
+	client2 = new StringeeClient();
 
-		client2 = new StringeeClient();
+	client2.connect(access_token);
 
-		client2.connect(access_token);
+	client2.on('connect', function () {
+		console.log('++++++++++++++ connected to StringeeServer');
+	});
 
-		client2.on('connect', function () {
-			console.log('++++++++++++++ connected to StringeeServer');
-		});
+	client2.on('authen', function (res) {
+		console.log('authen', res);
+		$('#loggedUserId').html(res.userId);
+	});
 
-		client2.on('authen', function (res) {
-			console.log('authen', res);
-			$('#loggedUserId').html(res.userId);
-		});
+	client2.on('disconnect', function () {
+		console.log('++++++++++++++ disconnected: ' + this.test);
+	});
 
-		client2.on('disconnect', function () {
-			console.log('++++++++++++++ disconnected: ' + this.test);
-		});
-
-		client2.on('incomingcall', function (incomingcall) {
-			call = incomingcall;
-			settingCallEvent(incomingcall);
+	client2.on('incomingcall', function (incomingcall) {
+		call = incomingcall;
+		settingCallEvent(incomingcall);
 
 //			call.videoResolution = {width: 1280, height: 720};
 
-			var answer = confirm('Incoming call from: ' + incomingcall.fromNumber + ', do you want to answer?');
+		var answer = confirm('Incoming call from: ' + incomingcall.fromNumber + ', do you want to answer?');
 
-			if (answer) {
-				call.answer(function (res) {
-					console.log('answer res', res);
-				});
-			} else {
-				call.reject(function (res) {
-					console.log('reject res', res);
-				});
-			}
+		if (answer) {
+			call.answer(function (res) {
+				console.log('answer res', res);
+			});
+		} else {
+			call.reject(function (res) {
+				console.log('reject res', res);
+			});
+		}
 
-			console.log('++++++++++++++ incomingcall', incomingcall);
-		});
+		console.log('++++++++++++++ incomingcall', incomingcall);
 	});
-
-
-	//+++++++event++++++++
-
 });
 
 function testMakeCall(videocall) {
