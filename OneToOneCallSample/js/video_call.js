@@ -27,21 +27,27 @@ $(document).ready(function () {
 
 //			call.videoResolution = {width: 1280, height: 720};
 
-		var answer = confirm('Incoming call from: ' + incomingcall.fromNumber + ', do you want to answer?');
+		$('#incoming-call-div').show();
 
-		if (answer) {
-			call.answer(function (res) {
-				console.log('answer res', res);
-			});
-		} else {
-			call.reject(function (res) {
-				console.log('reject res', res);
-			});
-		}
+		call.ringing(function (res) {});
 
 		console.log('++++++++++++++ incomingcall', incomingcall);
 	});
 });
+
+function testAnswerCall() {
+	call.answer(function (res) {
+		console.log('answer res', res);
+		$('#incoming-call-div').hide();
+	});
+}
+
+function testRejectCall() {
+	call.reject(function (res) {
+		console.log('reject res', res);
+		$('#incoming-call-div').hide();
+	});
+}
 
 function testMakeCall(videocall) {
 	console.log('make call, videocall: ' + videocall);
@@ -59,25 +65,42 @@ function testMakeCall(videocall) {
 
 function settingCallEvent(call1) {
 	call1.on('addremotestream', function (stream) {
+		console.log('addremotestream');
 		// reset srcObject to work around minor bugs in Chrome and Edge.
 		remoteVideo.srcObject = null;
 		remoteVideo.srcObject = stream;
 	});
 
 	call1.on('addlocalstream', function (stream) {
+		console.log('addlocalstream');
 		// reset srcObject to work around minor bugs in Chrome and Edge.
 		localVideo.srcObject = null;
 		localVideo.srcObject = stream;
 	});
 
-	call1.on('state', function (state) {
-		console.log('state ', state);
+	call1.on('signalingstate', function (state) {
+		console.log('signalingstate ', state);
 		var reason = state.reason;
 		$('#callStatus').html(reason);
+		
+		if (state.code === 6) {//call Ended
+			$('#incoming-call-div').hide();
+		}
+	});
+
+	call1.on('mediastate', function (state) {
+		console.log('mediastate ', state);
 	});
 
 	call1.on('info', function (info) {
 		console.log('on info:' + JSON.stringify(info));
+	});
+
+	call1.on('otherdevice', function (data) {
+		console.log('on otherdevice:' + JSON.stringify(data));
+		if ((data.type === 'CALL_STATE' && data.code >= 200) || data.type === 'CALL_END') {
+			$('#incoming-call-div').hide();
+		}
 	});
 }
 

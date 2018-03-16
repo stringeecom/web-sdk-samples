@@ -6,18 +6,28 @@
 
 		<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
 		<script type="text/javascript" src="js/socket.io-2.0.3.js"></script>
-		<script type="text/javascript" src="js/StringeeSDK-1.2.0.js"></script>
+		<script type="text/javascript" src="js/StringeeSDK-1.3.0.js"></script>
 
 		<script type="text/javascript">
 			var access_token = "YOUR_ACCESS_TOKEN";
 		</script>
 		<script type="text/javascript" src="js/video_call.js"></script>
+
+		<style>
+			#answerBtn, #rejectBtn {
+				background-color: green;
+				color: white;
+			}
+			#incoming-call-div {
+				display: none;
+			}
+		</style>
 	</head>
 
 	<body>
 
 		<div>
-			<input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="Call username" value="user_200">
+			<input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="Call username" value="user_2">
 
 			<button id="callBtn" onclick="testMakeCall(false)">Voice call</button>
 			<button id="videoCallBtn" onclick="testMakeCall(true)">Video call</button>
@@ -38,6 +48,12 @@
 		<div>
 			<br/>
 			Call status: <span id="callStatus" style="color: red">Not started</span>
+		</div>
+
+		<div id="incoming-call-div">
+			<br />
+			<button id="answerBtn" onclick="testAnswerCall()">Answer</button>
+			<button id="rejectBtn" onclick="testRejectCall()">Reject</button>
 		</div>
 
 		<div>
