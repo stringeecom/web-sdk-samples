@@ -4,6 +4,9 @@ var fromNumber = 'FROM_YOUR_NUMBER';
 var call;
 
 $(document).ready(function () {
+	//check isWebRTCSupported
+        console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
+
 	client = new StringeeClient();
 
 	client.connect(access_token);
