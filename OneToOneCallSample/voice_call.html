@@ -9,8 +9,8 @@
 		<script type="text/javascript" src="js/StringeeSDK-1.3.5.js"></script>
 
 		<script type="text/javascript">
-			var client;
-			var fromNumber = 'FROM_YOUR_NUMBER';
+			var stringeeClient;
+			var fromNumber = 'FROM_NUMBER';
 			var access_token = 'YOUR_ACCESS_TOKEN';
 
 			var call;
@@ -19,10 +19,25 @@
 				//check isWebRTCSupported
 				console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
 
-				client = new StringeeClient();
+				stringeeClient = new StringeeClient();
+				settingClientEvents(stringeeClient);
+				stringeeClient.connect(access_token);
+			});
 
-				client.connect(access_token);
+			function testMakeCall() {
+				call = new StringeeCall(stringeeClient, fromNumber, $('#callTo').val());
 
+				settingCallEvents(call);
+
+				call.makeCall(function (res) {
+					console.log('make call callback: ' + JSON.stringify(res));
+					if (res.r !== 0) {
+						$('#callStatus').html(res.message);
+					}
+				});
+			}
+
+			function settingClientEvents(client) {
 				client.on('connect', function () {
 					console.log('++++++++++++++ connected to StringeeServer');
 				});
@@ -38,7 +53,7 @@
 
 				client.on('incomingcall', function (incomingcall) {
 					call = incomingcall;
-					settingCallEvent(incomingcall);
+					settingCallEvents(incomingcall);
 
 					var answer = confirm('Incoming call from: ' + incomingcall.fromNumber + ', do you want to answer?');
 
@@ -54,22 +69,15 @@
 
 					console.log('++++++++++++++ incomingcall', incomingcall);
 				});
-			});
 
-			function testMakeCall() {
-				call = new StringeeCall(client, fromNumber, $('#callTo').val());
-
-				settingCallEvent(call);
-
-				call.makeCall(function (res) {
-					console.log('make call callback: ' + JSON.stringify(res));
-					if (res.r !== 0) {
-						$('#callStatus').html(res.message);
-					}
+				client.on('requestnewtoken', function () {
+					console.log('++++++++++++++ requestnewtoken; please get new access_token from YourServer and call client.connect(new_access_token)+++++++++');
+					//please get new access_token from YourServer and call: 
+					//client.connect(new_access_token);
 				});
 			}
 
-			function settingCallEvent(call1) {
+			function settingCallEvents(call1) {
 				call1.on('addlocalstream', function (stream) {
 				});
 

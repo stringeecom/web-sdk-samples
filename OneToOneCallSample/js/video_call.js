@@ -1,5 +1,5 @@
 
-var client;
+var stringeeClient;
 var fromNumber = 'FROM_YOUR_NUMBER';
 var call;
 
@@ -7,10 +7,42 @@ $(document).ready(function () {
 	//check isWebRTCSupported
         console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
 
-	client = new StringeeClient();
+	stringeeClient = new StringeeClient();
 
-	client.connect(access_token);
+	settingClientEvents(stringeeClient);
+	
+	stringeeClient.connect(access_token);
+});
 
+function testAnswerCall() {
+	call.answer(function (res) {
+		console.log('answer res', res);
+		$('#incoming-call-div').hide();
+	});
+}
+
+function testRejectCall() {
+	call.reject(function (res) {
+		console.log('reject res', res);
+		$('#incoming-call-div').hide();
+	});
+}
+
+function testMakeCall(videocall) {
+	console.log('make call, videocall: ' + videocall);
+//				var videoCall = false;
+	call = new StringeeCall(stringeeClient, fromNumber, $('#callTo').val(), videocall);
+
+//	call.videoResolution = {width: 1280, height: 720};
+
+	settingCallEvent(call);
+
+	call.makeCall(function (res) {
+		console.log('make call callback: ' + JSON.stringify(res));
+	});
+}
+
+function settingClientEvents(client) {
 	client.on('connect', function () {
 		console.log('++++++++++++++ connected to StringeeServer');
 	});
@@ -36,33 +68,11 @@ $(document).ready(function () {
 
 		console.log('++++++++++++++ incomingcall', incomingcall);
 	});
-});
 
-function testAnswerCall() {
-	call.answer(function (res) {
-		console.log('answer res', res);
-		$('#incoming-call-div').hide();
-	});
-}
-
-function testRejectCall() {
-	call.reject(function (res) {
-		console.log('reject res', res);
-		$('#incoming-call-div').hide();
-	});
-}
-
-function testMakeCall(videocall) {
-	console.log('make call, videocall: ' + videocall);
-//				var videoCall = false;
-	call = new StringeeCall(client, fromNumber, $('#callTo').val(), videocall);
-
-//	call.videoResolution = {width: 1280, height: 720};
-
-	settingCallEvent(call);
-
-	call.makeCall(function (res) {
-		console.log('make call callback: ' + JSON.stringify(res));
+	client.on('requestnewtoken', function () {
+		console.log('++++++++++++++ requestnewtoken; please get new access_token from YourServer and call client.connect(new_access_token)+++++++++');
+		//please get new access_token from YourServer and call: 
+		//client.connect(new_access_token);
 	});
 }
 
