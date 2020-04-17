@@ -8,41 +8,76 @@
         <script type="text/javascript" src="js/socket.io-2.3.0.js"></script>
         <script type="text/javascript" src="https://cdn.stringee.com/sdk/web/latest/stringee-web-sdk.min.js"></script>
 
-        <script type="text/javascript">
-            var access_token = "YOUR_ACCESS_TOKEN";
-        </script>
         <script type="text/javascript" src="js/video_call.js"></script>
 
         <style>
+            * {
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #24292e;
+            }
             #answerBtn, #rejectBtn {
-                background-color: green;
                 color: white;
             }
             #incoming-call-div {
                 display: none;
+                background: yellow;
+                height: 50px;
+                padding-top: 10px;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+
+            button {
+                cursor: pointer;
+                font-size: 16px;
+                display: inline-block;
+                color: #fff;
+                background-color: #10b759;
+                border-color: #10b759;
+                text-align: center;
+                vertical-align: middle;
+                border: 1px solid transparent;
+                padding: 4px 12px;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+            }
+            button:disabled,
+            button[disabled],button[disabled]:hover{
+                border: 1px solid #999999;
+                background-color: #cccccc;
+                color: #666666;
+            }
+            button:hover {
+                border: 1px solid #1dcc69;
+                background-color: #1dcc69;
             }
         </style>
     </head>
 
     <body>
-
         <div>
-            <input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="Call username" value="user_2">
-
-            <button id="callBtn" onclick="testMakeCall(false)">Voice call</button>
-            <button id="videoCallBtn" onclick="testMakeCall(true)">Video call</button>
-            <button id="hangupBtn" onclick="testHangupCall()">Hangup</button>
-
-            <button id="switchVoiceVideoBtn" onclick="upgradeToVideoCall()">UpgradeToVideoCall</button>
-            <button id="switchVoiceVideoBtn" onclick="switchVoiceVideoCall()">switchVoiceVideoCall</button>
-
-            <button id="muteBtn" onclick="mute()">Mute</button>
-            <button id="enableVideoBtn" onclick="enableVideo()">Enable/disable Video</button>
+            <textarea id="accessTokenArea" rows="6" cols="50" style="height: 130px; width: 600px; resize: none;">YOUR ACCESS TOKEN</textarea>
+            <br/>
+            <br/>
+            <button id="loginBtn">Login</button>
+            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
         </div>
 
         <div>
             <br/>
-            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
+            <input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="Call username" value="user_2">
+
+            <button disabled="" id="callBtn" onclick="testMakeCall(false)">Voice call</button>
+            <button disabled="" id="videoCallBtn" onclick="testMakeCall(true)">Video call</button>
+            <button disabled="" id="hangupBtn" onclick="testHangupCall()">Hangup</button>
+
+            <button disabled="" id="upgradeToVideoCallBtn" onclick="upgradeToVideoCall()">UpgradeToVideoCall</button>
+            <button disabled="" id="switchVoiceVideoBtn" onclick="switchVoiceVideoCall()">switchVoiceVideoCall</button>
+
+            <button disabled="" id="muteBtn" onclick="mute()">Mute</button>
+            <button disabled="" id="enableVideoBtn" onclick="enableVideo()">Enable/disable Video</button>
         </div>
 
         <div>

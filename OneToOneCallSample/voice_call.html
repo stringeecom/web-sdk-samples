@@ -5,20 +5,47 @@
         <meta charset="utf-8">
 
         <style>
+            * {
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #24292e;
+            }
             #answerBtn, #rejectBtn {
-                background-color: green;
                 color: white;
             }
             #incoming-call-div {
                 display: none;
                 background: yellow;
-                height: 30px;
+                height: 50px;
                 padding-top: 10px;
                 margin-top: 5px;
                 margin-bottom: 5px;
             }
-            #incoming-call-div button {
-                height: 20px;
+
+            button {
+                cursor: pointer;
+                font-size: 16px;
+                display: inline-block;
+                color: #fff;
+                background-color: #10b759;
+                border-color: #10b759;
+                text-align: center;
+                vertical-align: middle;
+                border: 1px solid transparent;
+                padding: 4px 12px;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+            }
+            button:disabled,
+            button[disabled],button[disabled]:hover{
+                border: 1px solid #999999;
+                background-color: #cccccc;
+                color: #666666;
+            }
+            button:hover {
+                border: 1px solid #1dcc69;
+                background-color: #1dcc69;
             }
         </style>
 
@@ -28,22 +55,40 @@
 
         <script type="text/javascript">
             var stringeeClient;
-            var fromNumber = 'FROM_NUMBER';
-            var access_token = 'YOUR_ACCESS_TOKEN';
-
             var call;
+            var authenticatedWithUserId = '';
+
+            var fromNumber = 'FROM_NUMBER';
+            var accessToken = 'YOUR_ACCESS_TOKEN';
 
             $(document).ready(function () {
                 //check isWebRTCSupported
                 console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
 
-                stringeeClient = new StringeeClient();
-                settingClientEvents(stringeeClient);
-                stringeeClient.connect(access_token);
+                $('#loginBtn').on('click', function () {
+                    $('#loggedUserId').html('Connecting...');
+
+                    var accessToken = $('#accessTokenArea').val();
+                    console.log('accessToken...: ' + accessToken);
+
+                    stringeeClient = new StringeeClient();
+                    settingClientEvents(stringeeClient);
+                    stringeeClient.connect(accessToken);
+                });
             });
 
             function testMakeCall() {
-                call = new StringeeCall(stringeeClient, fromNumber, $('#callTo').val());
+                var callTo = $('#callTo').val();
+                if (callTo.length === 0) {
+                    return;
+                }
+
+                //fromNumber
+                fromNumber = $('#fromNumber').val();
+                if (fromNumber.length === 0) {
+                    fromNumber = authenticatedWithUserId;
+                }
+                call = new StringeeCall(stringeeClient, fromNumber, callTo);
 
                 settingCallEvents(call);
 
@@ -70,7 +115,10 @@
                 client.on('authen', function (res) {
                     console.log('on authen: ', res);
                     if (res.r === 0) {
-                        $('#loggedUserId').html(res.userId);
+                        authenticatedWithUserId = res.userId;
+                        $('#callBtn').removeAttr('disabled');
+
+                        $('#loggedUserId').html(authenticatedWithUserId);
                         $('#loggedUserId').css('color', 'blue');
                     } else {
                         $('#loggedUserId').html(res.message);
@@ -79,6 +127,7 @@
 
                 client.on('disconnect', function () {
                     console.log('disconnected');
+                    $('#callBtn').attr('disabled', 'disabled');
                 });
 
                 client.on('incomingcall', function (incomingcall) {
@@ -109,6 +158,8 @@
             }
 
             function settingCallEvents(call1) {
+                $('#hangupBtn').removeAttr('disabled');
+
                 call1.on('error', function (info) {
                     console.log('on error: ' + JSON.stringify(info));
                 });
@@ -127,8 +178,13 @@
                 call1.on('signalingstate', function (state) {
                     console.log('signalingstate', state);
 
-                    if (state.code == 6) {
+                    if (state.code == 6) {//call ended
                         $('#incoming-call-div').hide();
+                        callStopped();
+                    }
+
+                    if (state.code == 5) {//busy here
+                        callStopped();
                     }
 
                     var reason = state.reason;
@@ -160,6 +216,7 @@
             }
 
             function testRejectCall() {
+                callStopped();
                 call.reject(function (res) {
                     console.log('reject res', res);
                     $('#incoming-call-div').hide();
@@ -168,10 +225,19 @@
 
             function testHangupCall() {
                 remoteVideo.srcObject = null;
+                callStopped();
 
                 call.hangup(function (res) {
                     console.log('hangup res', res);
                 });
+            }
+
+            function callStopped() {
+                $('#hangupBtn').attr('disabled', 'disabled');
+
+                setTimeout(function () {
+                    $('#callStatus').html('Call ended');
+                }, 1500);
             }
         </script>
 
@@ -179,17 +245,25 @@
     </head>
 
     <body>
-
         <div>
-            <input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="userId or number" value="">
-
-            <button id="callBtn" onclick="testMakeCall()">Call</button>
-            <button id="hangupBtn" onclick="testHangupCall()">Hangup</button>
+            <textarea id="accessTokenArea" rows="6" cols="50" style="height: 130px; width: 600px; resize: none;">YOUR ACCESS TOKEN</textarea>
+            <br/>
+            <br/>
+            <button id="loginBtn">Login</button>
+            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
         </div>
 
         <div>
             <br/>
-            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
+            Make call from:
+            <input id="fromNumber" type="text" name="fromNumber" style="width: 650px;" placeholder="Enter the phone number purchased from Stringee here to make an App-to-Phone call" value="">
+
+            <br/><br/>
+            Make call to:
+            <input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="userId or number" value="">
+
+            <button disabled="" id="callBtn" onclick="testMakeCall()">Call</button>
+            <button disabled="" id="hangupBtn" onclick="testHangupCall()">Hangup</button>
         </div>
 
         <div id="incoming-call-div">
@@ -207,7 +281,6 @@
         <div>
             <video id="remoteVideo" playsinline autoplay style="width: 350px"></video>
         </div>
-
     </body>
 
 </html>

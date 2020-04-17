@@ -7,11 +7,17 @@ $(document).ready(function () {
     //check isWebRTCSupported
     console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
 
-    stringeeClient = new StringeeClient();
+    $('#loginBtn').on('click', function () {
+        $('#loggedUserId').html('Connecting...');
+        var accessToken = $('#accessTokenArea').val();
+        console.log('accessToken...: ' + accessToken);
 
-    settingClientEvents(stringeeClient);
+        stringeeClient = new StringeeClient();
 
-    stringeeClient.connect(access_token);
+        settingClientEvents(stringeeClient);
+
+        stringeeClient.connect(accessToken);
+    });
 });
 
 function testAnswerCall() {
@@ -22,6 +28,8 @@ function testAnswerCall() {
 }
 
 function testRejectCall() {
+    callEnded();
+
     call.reject(function (res) {
         console.log('reject res', res);
         $('#incoming-call-div').hide();
@@ -52,12 +60,17 @@ function settingClientEvents(client) {
         if (res.r === 0) {
             $('#loggedUserId').html(res.userId);
             $('#loggedUserId').css('color', 'blue');
+
+            $('#callBtn').removeAttr('disabled');
+            $('#videoCallBtn').removeAttr('disabled');
         } else {
             $('#loggedUserId').html(res.message);
         }
     });
 
     client.on('disconnect', function () {
+        $('#callBtn').attr('disabled', 'disabled');
+        $('#videoCallBtn').attr('disabled', 'disabled');
         console.log('++++++++++++++ disconnected: ' + this.test);
     });
 
@@ -82,6 +95,8 @@ function settingClientEvents(client) {
 }
 
 function settingCallEvent(call1) {
+    callStarted();
+
     call1.on('addremotestream', function (stream) {
         console.log('addremotestream');
         // reset srcObject to work around minor bugs in Chrome and Edge.
@@ -107,6 +122,9 @@ function settingCallEvent(call1) {
 
         if (state.code === 6) {//call Ended
             $('#incoming-call-div').hide();
+            callEnded();
+        } else if (state.code === 5) {//busy
+            callEnded();
         }
     });
 
@@ -122,12 +140,14 @@ function settingCallEvent(call1) {
         console.log('on otherdevice:' + JSON.stringify(data));
         if ((data.type === 'CALL_STATE' && data.code >= 200) || data.type === 'CALL_END') {
             $('#incoming-call-div').hide();
+            callEnded();
         }
     });
 }
 
 function testHangupCall() {
     remoteVideo.srcObject = null;
+    callEnded();
 
     call.hangup(function (res) {
         console.log('hangup res', res);
@@ -141,7 +161,9 @@ function upgradeToVideoCall() {
 
 function switchVoiceVideoCall() {
     var info = {requestVideo: true};
-//	var info = true;
+
+    console.log('please using upgradeToVideoCall() method to enable/disable local video, send request enable video to "partner"');
+
     call.sendInfo(info, function (res) {
         console.log('switchVoiceVideoCall', res);
     });
@@ -168,4 +190,24 @@ function enableVideo() {
         success = call.enableLocalVideo(true);
     }
     console.log('enableVideo result: ' + success);
+}
+
+function callStarted() {
+    $('#hangupBtn').removeAttr('disabled');
+    $('#upgradeToVideoCallBtn').removeAttr('disabled');
+    $('#switchVoiceVideoBtn').removeAttr('disabled');
+    $('#muteBtn').removeAttr('disabled');
+    $('#enableVideoBtn').removeAttr('disabled');
+}
+
+function callEnded() {
+    $('#hangupBtn').attr('disabled', 'disabled');
+    $('#upgradeToVideoCallBtn').attr('disabled', 'disabled');
+    $('#switchVoiceVideoBtn').attr('disabled', 'disabled');
+    $('#muteBtn').attr('disabled', 'disabled');
+    $('#enableVideoBtn').attr('disabled', 'disabled');
+
+    setTimeout(function () {
+        $('#callStatus').html('Call ended');
+    }, 1500);
 }
