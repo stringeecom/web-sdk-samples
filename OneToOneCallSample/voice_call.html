@@ -1,188 +1,210 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Stringee video call test</title>
-		<meta charset="utf-8">
+    <head>
+        <title>Stringee Voice Call (app-to-app, app-to-phone, phone-to-app)</title>
+        <meta charset="utf-8">
 
-		<style>
-			#answerBtn, #rejectBtn {
-				background-color: green;
-				color: white;
-			}
-			#incoming-call-div {
-				display: none;
-				background: yellow;
-				height: 30px;
-				padding-top: 10px;
-				margin-top: 5px;
-				margin-bottom: 5px;
-			}
-			#incoming-call-div button {
-				height: 20px;
-			}
-		</style>
+        <style>
+            #answerBtn, #rejectBtn {
+                background-color: green;
+                color: white;
+            }
+            #incoming-call-div {
+                display: none;
+                background: yellow;
+                height: 30px;
+                padding-top: 10px;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+            #incoming-call-div button {
+                height: 20px;
+            }
+        </style>
 
-		<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
-		<script type="text/javascript" src="js/socket.io-2.1.1.js"></script>
-		<script type="text/javascript" src="js/StringeeSDK-1.5.1.js"></script>
+        <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/socket.io-2.3.0.js"></script>
+        <script type="text/javascript" src="https://cdn.stringee.com/sdk/web/latest/stringee-web-sdk.min.js"></script>
 
-		<script type="text/javascript">
-			var stringeeClient;
-			var fromNumber = 'FROM_NUMBER';
-			var access_token = 'YOUR_ACCESS_TOKEN';
+        <script type="text/javascript">
+            var stringeeClient;
+            var fromNumber = 'FROM_NUMBER';
+            var access_token = 'YOUR_ACCESS_TOKEN';
 
-			var call;
+            var call;
 
-			$(document).ready(function () {
-				//check isWebRTCSupported
-				console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
+            $(document).ready(function () {
+                //check isWebRTCSupported
+                console.log('StringeeUtil.isWebRTCSupported: ' + StringeeUtil.isWebRTCSupported());
 
-				stringeeClient = new StringeeClient();
-				settingClientEvents(stringeeClient);
-				stringeeClient.connect(access_token);
-			});
+                stringeeClient = new StringeeClient();
+                settingClientEvents(stringeeClient);
+                stringeeClient.connect(access_token);
+            });
 
-			function testMakeCall() {
-				call = new StringeeCall(stringeeClient, fromNumber, $('#callTo').val());
+            function testMakeCall() {
+                call = new StringeeCall(stringeeClient, fromNumber, $('#callTo').val());
 
-				settingCallEvents(call);
+                settingCallEvents(call);
 
-				call.makeCall(function (res) {
-					console.log('make call callback: ' + JSON.stringify(res));
-					if (res.r !== 0) {
-						$('#callStatus').html(res.message);
-					}
-				});
-			}
+                call.makeCall(function (res) {
+                    console.log('make call callback: ' + JSON.stringify(res));
+                    if (res.r !== 0) {
+                        $('#callStatus').html(res.message);
+                    } else {
+                        //call type
+                        if (res.toType === 'internal') {
+                            $('#callType').html('App-to-App call');
+                        } else {
+                            $('#callType').html('App-to-Phone call');
+                        }
+                    }
+                });
+            }
 
-			function settingClientEvents(client) {
-				client.on('connect', function () {
-					console.log('connected to StringeeServer');
-				});
+            function settingClientEvents(client) {
+                client.on('connect', function () {
+                    console.log('connected to StringeeServer');
+                });
 
-				client.on('authen', function (res) {
-					console.log('authen: ', res);
-					$('#loggedUserId').html(res.userId);
-				});
+                client.on('authen', function (res) {
+                    console.log('on authen: ', res);
+                    if (res.r === 0) {
+                        $('#loggedUserId').html(res.userId);
+                    }
+                });
 
-				client.on('disconnect', function () {
-					console.log('disconnected');
-				});
+                client.on('disconnect', function () {
+                    console.log('disconnected');
+                });
 
-				client.on('incomingcall', function (incomingcall) {
-					call = incomingcall;
-					settingCallEvents(incomingcall);
+                client.on('incomingcall', function (incomingcall) {
+                    call = incomingcall;
+                    settingCallEvents(incomingcall);
 
-					$('#incoming-call-div').show();
-					$('#incoming_call_from').html(call.fromNumber);
+                    $('#incoming-call-div').show();
+                    $('#incoming_call_from').html(call.fromNumber);
 
-					console.log('incomingcall: ', incomingcall);
-				});
+                    console.log('incomingcall: ', incomingcall);
+                    //fromInternal: false
+                    if (incomingcall.fromInternal) {
+                        $('#callType').html('App-to-App call');
+                    } else {
+                        $('#callType').html('Phone-to-App call');
+                    }
+                });
 
-				client.on('requestnewtoken', function () {
-					console.log('request new token; please get new access_token from YourServer and call client.connect(new_access_token)');
-					//please get new access_token from YourServer and call: 
-					//client.connect(new_access_token);
-				});
+                client.on('requestnewtoken', function () {
+                    console.log('request new token; please get new access_token from YourServer and call client.connect(new_access_token)');
+                    //please get new access_token from YourServer and call: 
+                    //client.connect(new_access_token);
+                });
 
-				client.on('otherdeviceauthen', function (data) {
-					console.log('otherdeviceauthen: ', data);
-				});
-			}
+                client.on('otherdeviceauthen', function (data) {
+                    console.log('otherdeviceauthen: ', data);
+                });
+            }
 
-			function settingCallEvents(call1) {
-				call1.on('addlocalstream', function (stream) {
-				});
+            function settingCallEvents(call1) {
+                call1.on('error', function (info) {
+                    console.log('on error: ' + JSON.stringify(info));
+                });
 
-				call1.on('addremotestream', function (stream) {
-					// reset srcObject to work around minor bugs in Chrome and Edge.
-					remoteVideo.srcObject = null;
-					remoteVideo.srcObject = stream;
-				});
+                call1.on('addlocalstream', function (stream) {
+                    console.log('on addlocalstream', stream);
+                });
 
-				call1.on('signalingstate', function (state) {
-					console.log('signalingstate ', state);
+                call1.on('addremotestream', function (stream) {
+                    console.log('on addremotestream', stream);
+                    // reset srcObject to work around minor bugs in Chrome and Edge.
+                    remoteVideo.srcObject = null;
+                    remoteVideo.srcObject = stream;
+                });
 
-					if (state.code == 6) {
-						$('#incoming-call-div').hide();
-					}
+                call1.on('signalingstate', function (state) {
+                    console.log('signalingstate', state);
 
-					var reason = state.reason;
-					$('#callStatus').html(reason);
-				});
+                    if (state.code == 6) {
+                        $('#incoming-call-div').hide();
+                    }
 
-				call1.on('mediastate', function (state) {
-					console.log('mediastate ', state);
-				});
+                    var reason = state.reason;
+                    $('#callStatus').html(reason);
+                });
 
-				call1.on('info', function (info) {
-					console.log('on info', info);
-				});
+                call1.on('mediastate', function (state) {
+                    console.log('mediastate ', state);
+                });
 
-				call1.on('otherdevice', function (data) {
-					console.log('on otherdevice:' + JSON.stringify(data));
+                call1.on('info', function (info) {
+                    console.log('on info', info);
+                });
 
-					if ((data.type === 'CALL_STATE' && data.code >= 200) || data.type === 'CALL_END') {
-						$('#incoming-call-div').hide();
-					}
-				});
-			}
+                call1.on('otherdevice', function (data) {
+                    console.log('on otherdevice:' + JSON.stringify(data));
 
-			function testAnswerCall() {
-				call.answer(function (res) {
-					console.log('answer res', res);
-					$('#incoming-call-div').hide();
-				});
-			}
+                    if ((data.type === 'CALL_STATE' && data.code >= 200) || data.type === 'CALL_END') {
+                        $('#incoming-call-div').hide();
+                    }
+                });
+            }
 
-			function testRejectCall() {
-				call.reject(function (res) {
-					console.log('reject res', res);
-					$('#incoming-call-div').hide();
-				});
-			}
+            function testAnswerCall() {
+                call.answer(function (res) {
+                    console.log('answer res', res);
+                    $('#incoming-call-div').hide();
+                });
+            }
 
-			function testHangupCall() {
-				remoteVideo.srcObject = null;
+            function testRejectCall() {
+                call.reject(function (res) {
+                    console.log('reject res', res);
+                    $('#incoming-call-div').hide();
+                });
+            }
 
-				call.hangup(function (res) {
-					console.log('hangup res', res);
-				});
-			}
-		</script>
+            function testHangupCall() {
+                remoteVideo.srcObject = null;
+
+                call.hangup(function (res) {
+                    console.log('hangup res', res);
+                });
+            }
+        </script>
 
 
-	</head>
+    </head>
 
-	<body>
+    <body>
 
-		<div>
-			<input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="userId or number" value="">
+        <div>
+            <input id="callTo" type="text" name="toUsername" style="width: 200px;" placeholder="userId or number" value="">
 
-			<button id="callBtn" onclick="testMakeCall()">Call</button>
-			<button id="hangupBtn" onclick="testHangupCall()">Hangup</button>
-		</div>
+            <button id="callBtn" onclick="testMakeCall()">Call</button>
+            <button id="hangupBtn" onclick="testHangupCall()">Hangup</button>
+        </div>
 
-		<div>
-			<br/>
-			Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
-		</div>
+        <div>
+            <br/>
+            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
+        </div>
 
-		<div id="incoming-call-div">
-			Incoming call from: <span id="incoming_call_from"></span>
-			<button id="answerBtn" onclick="testAnswerCall()">Answer</button>
-			<button id="rejectBtn" onclick="testRejectCall()">Reject</button>
-		</div>
+        <div id="incoming-call-div">
+            Incoming call from: <span id="incoming_call_from"></span>
+            <button id="answerBtn" onclick="testAnswerCall()">Answer</button>
+            <button id="rejectBtn" onclick="testRejectCall()">Reject</button>
+        </div>
 
-		<div>
-			<br/>
-			Call status: <span id="callStatus" style="color: red">Not started</span>
-		</div>
+        <div>
+            <br/>
+            Call status: <span id="callStatus" style="color: red">Not started</span> |
+            Call type: <span id="callType" style="color: red">...</span>
+        </div>
 
-		<div>
-			<video id="remoteVideo" playsinline autoplay style="width: 350px"></video>
-		</div>
+        <div>
+            <video id="remoteVideo" playsinline autoplay style="width: 350px"></video>
+        </div>
 
-	</body>
+    </body>
 
 </html>
