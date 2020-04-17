@@ -51,6 +51,9 @@ function settingClientEvents(client) {
         console.log('authen', res);
         if (res.r === 0) {
             $('#loggedUserId').html(res.userId);
+            $('#loggedUserId').css('color', 'blue');
+        } else {
+            $('#loggedUserId').html(res.message);
         }
     });
 
