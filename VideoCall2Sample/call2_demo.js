@@ -1,34 +1,46 @@
+var STRINGEE_SERVER_ADDRS;
 var stringeeClient;
-var access_token;
+var getTokenUrl;
+
 var call;
-var userId;
+var holdState = false;
+
+
+STRINGEE_SERVER_ADDRS = ['wss://v1.stringee.com:6899/', 'wss://v2.stringee.com:6899/'];
+getTokenUrl = 'php/token_pro.php';
+
 
 $(document).ready(function () {
-    
+    $('#sdkVersion').html(StringeeUtil.version().version + '_build_' + StringeeUtil.version().build 
+            + '_sample_1');
 });
 
-function switchCamera(){
+function switchCamera() {
+    
+    
     call.switchCamera();
 }
 
-function sendInfo(msg){
-    call.sendInfo(msg, function (res){
+function shareScreen() {
+    call.startShareScreen();
+}
+
+function sendInfo(msg) {
+    call.sendInfo(msg, function (res) {
         console.log('sendInfo res', res);
     });
 }
 
 function testLogin() {
-    stringeeClient = new StringeeClient();
+    stringeeClient = new StringeeClient(STRINGEE_SERVER_ADDRS);
     settingsClientEvents(stringeeClient);
-    accessToken = document.getElementById("accessToken").value;
-    stringeeClient.connect(accessToken);
+    getAccessTokenAndConnectToStringee(stringeeClient);
 }
 
 function settingsClientEvents(client) {
     client.on('authen', function (res) {
         console.log('on authen: ', res);
         if (res.r === 0) {
-            userId = res.userId;
             $('#loggedUserId').html(res.userId);
             $('#loggedUserId').css('color', 'blue');
             $('#loginBtn').attr('disabled', 'disabled');
@@ -57,9 +69,18 @@ function settingsClientEvents(client) {
     });
 }
 
+function getAccessTokenAndConnectToStringee(client) {
+    var userId = $('#userIdToAuthen').val();
+
+    let urlGetToken = getTokenUrl + "?userId=" + userId;
+    $.getJSON(urlGetToken, function (res) {
+        var access_token = res.access_token;
+        client.connect(access_token);
+    });
+}
 
 function testCall2() {
-    var fromNumber = userId;
+    var fromNumber = '0909982668';
     var toNumber = $('#toNumberBtn').val();
 
     call = new StringeeCall2(stringeeClient, fromNumber, toNumber, true);
@@ -75,21 +96,32 @@ function testCall2() {
 
 function settingCallEvent(call1) {
     call1.on('addlocalstream', function (stream) {
-        // reset srcObject to work around minor bugs in Chrome and Edge.
-//        console.log('addlocalstream');
-        localVideo.srcObject = null;
-        localVideo.srcObject = stream;
+        console.log('addlocalstream, khong xu ly event nay, xu ly o event: addlocaltrack');
     });
-    call1.on('addremotestream', function (stream) {
-        // reset srcObject to work around minor bugs in Chrome and Edge.
-//        console.log('addremoonstop()testream');
-        remoteVideo.srcObject = null;
-        remoteVideo.srcObject = stream;
-        
-        remoteAudio.srcObject = null;
-        remoteAudio.srcObject = stream;
 
+    call1.on('addlocaltrack', function (localtrack1) {
+        console.log('addlocaltrack', localtrack1);
+
+        var element = localtrack1.attach();
+        document.getElementById("local_videos").appendChild(element);
+        element.style.height = "150px";
+        element.style.color = "red";
     });
+
+    call1.on('addremotetrack', function (track) {
+        var element = track.attach();
+        document.getElementById("remote_videos").appendChild(element);
+        element.style.height = "150px";
+    });
+
+    call1.on('removeremotetrack', function (track) {
+        track.detachAndRemove();
+    });
+
+    call1.on('removelocaltrack', function (track) {
+        track.detachAndRemove();
+    });
+
     call1.on('signalingstate', function (state) {
         console.log('signalingstate ', state);
         if (state.code === 6) {
@@ -101,6 +133,7 @@ function settingCallEvent(call1) {
             onstop();
         } else if (state.code === 3) {
             setCallStatus('Answered');
+            test_stats();
         } else if (state.code === 5) {
             setCallStatus('User busy');
             onstop();
@@ -126,10 +159,45 @@ function testAnswer() {
     call.answer(function (res) {
         console.log('answer res', res);
         if (res.r === 0) {
+            test_stats();
             setCallStatus('Answered');
         }
     });
     $('#incomingcallBox').hide();
+}
+
+function testTransfer() {
+    console.log("testTransfer");
+    var to = $('#transferNumberInput').val();
+    var toType = $('#toType').val();
+    var transferType = $('#transferType').val();
+    call.transferCall(to, toType, transferType, console.log);
+}
+
+function testHold() {
+	console.log("testHold");
+	var hold = holdState = !holdState;
+	var hold = call.isOnHold;
+	if (!hold) {
+		call.sendHold(null, function (h) {
+			var btn = document.getElementById("holdBtn");
+			if (btn) {
+				btn.innerHTML = h ? "Hold" : "Unhold";
+			}
+		}.bind(this, hold));
+	} else {
+		call.sendUnHold(function (h) {
+			var btn = document.getElementById("holdBtn");
+			if (btn) {
+				btn.innerHTML = h ? "Hold" : "Unhold";
+			}
+		}.bind(this, hold));
+	}
+}
+
+function testLeave() {
+    console.log("testLeave");
+    call.leaveRoom();
 }
 
 function testReject() {
@@ -148,8 +216,20 @@ function testHangup() {
 }
 
 function onstop() {
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
+    console.log('=======onstop=====');
+
+    if(timeout_stats){
+        clearTimeout(timeout_stats);
+    }
+
+    if (!call) {
+        return;
+    }
+
+    call.subscribedTracks.forEach(function (track) {
+        track.detachAndRemove();
+    });
+
 }
 
 function setCallStatus(status) {
@@ -174,4 +254,29 @@ function testDisableVideo() {
         call.enableLocalVideo(true);
         console.log('enable Local Video');
     }
+}
+
+var timeout_stats;
+
+function test_stats() {
+    var time = 2000;//ms
+    console.log('test_stats...');
+
+    if (call && call.localTracks.length > 0) {
+        call.localTracks[0].getBW().then((res) => {
+            $('#audioSent').html(res.audioSent + ' kbits/s');
+            $('#videoSent').html(res.videoSent + ' kbits/s');
+        });
+    }
+
+    if (call && call.subscribedTracks.length > 0) {
+        call.subscribedTracks[0].getBW().then((res) => {
+            $('#audioReceived').html(res.audioReceived + ' kbits/s');
+            $('#videoReceived').html(res.videoReceived + ' kbits/s');
+        });
+    }
+
+    timeout_stats = setTimeout(function () {
+        test_stats();
+    }, time);
 }
