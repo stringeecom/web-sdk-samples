@@ -1,0 +1,136 @@
+.chat-box, .login-form{
+    border: 1px solid #cfbfbf;
+    border-radius: 6px;
+}
+body .login-form{
+    margin-left: -12px !important;
+    margin-right: -12px !important;
+}
+#chat-box{
+    display: none;
+}
+.login-form{
+    margin: auto !important;
+}
+.title{
+    padding-top: 10px;
+    text-transform: uppercase;
+}
+#btnConnect{
+    width: 100%;
+}
+.name{
+    margin-bottom: 0;
+}
+.chat-item{
+    transition: .3s;
+    cursor: pointer;
+}
+
+.left-body .chat-item:hover, .chat-item.active{
+    border-radius: 6px;
+    background: #eaf3ff;
+}
+
+.chat-item.active .badge-new-msg{
+    display: none;
+}
+
+.chat-box .content-message{
+    border-left: 1px solid #cfbfbf;
+    padding-top: 0px !important;
+}
+
+.right-body, .left-body{
+    height: 500px;
+    overflow-y: auto;
+}
+
+.right-header{
+    border-bottom: 1px solid #cfbfbf;
+    margin-left: -12px;
+    margin-right: -12px;
+}
+
+.btn-right{
+    right: 6px;
+    top: -8px;
+}
+
+.avatar img{
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.avatar.avatar-sm img{
+    width: 30px;
+    height: 30px;
+}
+
+.message-other .item-message{
+    margin-bottom: 0px;
+    background: #e4e6eb;
+    border-radius: 2px 15px 15px 2px;
+    padding: 5px 15px;
+    margin: 2px 0px;
+    display: inline-block;
+}
+
+.message-other p:first-child{
+    border-radius: 15px 15px 15px 2px;
+}
+
+.message-other p:last-child{
+    border-radius: 2px 15px 15px 15px;
+}
+
+.message.my-message{
+    text-align: right;
+    padding-right: 10px;
+}
+
+.my-message .item-message{
+    margin-bottom: 0px;
+    background: #0084ff;
+    color: white;
+    border-radius: 15px 2px 2px 15px;
+    padding: 5px 15px;
+    margin: 2px 0px;
+    display: inline-block;
+}
+
+.my-message p:first-child{
+    border-radius: 15px 15px 2px 15px;
+}
+
+.my-message p:last-child{
+    border-radius: 15px 2px 15px 15px;
+}
+
+.left-footer{
+    width: 100%;
+    bottom: 15px;
+    padding-right: 24px;
+}
+
+#newChat{
+    width: 100%;
+}
+
+#chatContent{
+    display: none;
+}
+
+.badge-new-msg{
+    right: 10px;
+}
+
+.last-message{
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 190px;
+    overflow: hidden;
+}

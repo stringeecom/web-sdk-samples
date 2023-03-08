@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Stringee - Live chat</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='./css/style.css'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src='./js/jquery-3.2.1.min.js'></script>
+    <script src='./js/sdk/latest.sdk.bundle.min.js'></script>
+    <script src='./js/component.js'></script>
+    <script src='./js/chat.js'></script>
+    <script src='./js/chat-demo.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container my-3" style="max-width: 900px;">
+        <div class="row login-form mb-3 pb-3">
+            <h5 class="text-center">Nhập User ID bất kỳ</h5>
+            <div class="col-8 d-flex">
+                <span style="width: 100px;">User ID:</span>
+                <input type="text" class="form-control form-control-sm" id="newUserID">
+            </div>
+            <div class="col-4 text-end">
+                <button class="btn btn-primary btn-sm" id="btnConnect">Connect</button>
+            </div>
+        </div>
+        <div class="row chat-box">
+            <div class="col-4 py-3 position-relative">
+                <div class="left-header px-2 position-relative">
+                    <span>Xin chào <strong id="userId"></strong>!</span>
+                    <input type="text" class="form-control form-control-sm mt-1" id="inputSearch" placeholder="Nhập tên để tìm kiếm">
+                    
+                    <div class="dropdown btn-right position-absolute">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" id="logoutBtn" href="javascript:;">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="left-body" id="chatList">
+                    <!-- {{chat-item}} -->
+                </div>
+                <div class="left-footer text-center position-absolute">
+                    <button class="btn btn-primary mt-3 btn-sm" id="newChat" data-bs-toggle="modal" disabled data-bs-target="#exampleModal">Chat mới</button>
+                    Xem đầy đủ tại <a href="https://developer.stringee.com/docs/javascript-sdk/install-javascript-chat-sdk">https://developer.stringee.com/docs</a>
+                </div>
+            </div>
+            <div class="col-8 py-3 content-message">
+                <div class="right-header px-2">
+                    <div class="d-flex align-items-center" style="min-height: 66px;">
+                        <div class="avatar my-2">
+                            <img style="display: none;" id="convAvatar" src="./img/1.jfif">
+                        </div>
+                        <div class="info">
+                            <p class="name fw-bolder" id="convName"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-body my-3" id="chatContent">
+                    <!-- {{chatContent}} -->
+                </div>
+                <div class="right-body my-3" id="noChat">
+                    <div class="text-center my-4">
+                        <p>Chọn cuộc trò chuyện để hiển thị ở đây</p>
+                    </div>
+                </div>
+                <div class="right-footer d-flex">
+                    <input type="text" class="form-control form-control-sm mx-3" disabled id="messageContent" placeholder="Aa...">
+                    <button type="button" class="btn btn-sm btn-outline-primary" disabled id="btnSend">Gửi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="common-hidden">
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto toast-title"></strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    <p class="toast-content"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Chat mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="exampleFormControlTextarea1" class="form-label">Nhập user Id:</label>
+                        <input type="text" class="form-control form-control-sm" id="userIds" placeholder="user1, user2, ...">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnStart" data-bs-dismiss="modal">Bắt đầu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
