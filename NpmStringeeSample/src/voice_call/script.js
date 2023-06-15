@@ -1,4 +1,4 @@
-import { StringeeUtil, StringeeClient, StringeeCall } from "@/latest.npm.sdk.bundle.js";
+import { StringeeUtil, StringeeClient, StringeeCall } from "stringee";
 
 let stringeeClient,
     call,
