@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stringee Video Call</title>
+        <style>
+            * {
+                font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #24292e;
+            }
+            #answerBtn, #rejectBtn {
+                color: white;
+            }
+            #incoming-call-div {
+                display: none;
+                background: yellow;
+                height: 50px;
+                padding-top: 10px;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+
+            button {
+                cursor: pointer;
+                font-size: 16px;
+                display: inline-block;
+                color: #fff;
+                background-color: #10b759;
+                border-color: #10b759;
+                text-align: center;
+                vertical-align: middle;
+                border: 1px solid transparent;
+                padding: 4px 12px;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+            }
+            button:disabled,
+            button[disabled],button[disabled]:hover{
+                border: 1px solid #999999;
+                background-color: #cccccc;
+                color: #666666;
+            }
+            button:hover {
+                border: 1px solid #1dcc69;
+                background-color: #1dcc69;
+            }
+            #answerBtn, #rejectBtn {
+                background-color: green;
+                color: white;
+            }
+            #incoming-call-div {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div>
+            <textarea id="accessTokenArea" rows="6" cols="50" style="height: 130px; width: 600px; resize: none;">YOUR_ACCESS_TOKEN</textarea>
+            <br/>
+            <br/>
+            <button id="loginBtn">Login</button>
+            Logged in: <span id="loggedUserId" style="color: red">Not logged</span>
+            | SDK Version: <span id="sdkVersion" style="color: blue"></span>
+        </div>
+        <div>
+            <input style="display: none;" id="userIdToAuthen" type="text" name="userIdToAuthen" style="width: 200px;" placeholder="User ID to authen" value="huydn">
+            <!-- <button id="loginBtn">Login</button> -->
+
+            <br/><br/>
+
+            Call status: <span id="txtStatus" style="color: red">Not started</span>
+
+            <input id="toNumberBtn" type="text" name="toNumberBtn" style="width: 200px;" placeholder="Call to number" value="customer_0909982668">
+
+            <select id="videoDimensions">
+                <option value="720p">720p (1280x720)</option>
+                <option value="480p">480p (854x480)</option>
+                <option value="360p">360p (640x360)</option>
+                <option value="240p">240p (426x240)</option>
+            </select>
+
+            <button disabled="" id="call2Btn">Make Call</button>
+            <button disabled="" id="call2HangupBtn">Hangup</button>
+
+            <button disabled="" id="muteBtn">Mute</button>
+            <button disabled="" id="enableVideoBtn">Enable/Disable video</button>
+            <button id="switchCameraBtn">Switch Camera (mobile only)</button>
+
+            <button id="sendInfo1">Send info</button>
+            <button id="sendInfo2">Send info 2</button>
+        </div>
+
+        <div id="transferBox" style="padding: 5px;width: 800px;">
+            <input id="transferNumberInput" type="text" name="transferNumberInput" style="width: 200px;" placeholder="Transfer to number" value="huydn2">
+            <select id="toType">
+                <option value="agent">Agent</option>
+                <option value="queue">Queue</option>
+            </select>
+            <select id="transferType">
+                <option value="blind">Blind</option>
+                <option value="attended">Attended</option>
+                <option value="conference">Conference</option>
+                <option value="coach">Coach</option>
+            </select>
+            <button id="transferBtn">Transfer</button>
+            <button id="holdBtn">Hold</button>
+            <button id="leaveBtn">Leave</button>
+        </div>
+
+        <div id="incomingcallBox" style="display: none; background-color: yellow; padding: 5px; width: 600px;">
+            Incoming call from: <span id="incomingCallFrom" style="color: blue"></span>
+
+            <button id="answerBtn">Answer</button>
+            <button id="rejectBtn">Reject</button>
+        </div>
+
+        <div id="local_videos" style="height: 200px">
+            Local videos:
+            <br/>
+        </div>
+
+        <div id="remote_videos">
+            Remote videos:
+            <br/>
+        </div>
+
+        <div>
+			<br/>
+			Audio sent: <span id="audioSent"></span>
+			<br/>
+			Video sent: <span id="videoSent"></span>
+
+			<br/><br/>
+			Audio received: <span id="audioReceived"></span>
+			<br/>
+			Video received: <span id="videoReceived"></span>
+		</div>
+    </body>
+</html>

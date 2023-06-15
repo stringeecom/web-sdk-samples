@@ -1,0 +1,4 @@
+dist/**
+node_modules/**
+lib/**
+src/latest.npm.sdk.bundle.js

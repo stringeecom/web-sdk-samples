@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<script src="../dist/bundle-for-browser.js"></script>
+<script>
+
+    const stringeeClient = new Stringee.StringeeClient();
+    stringeeClient
+        .connect("token_abc2")
+        .then(function() {
+            console.log("11");
+        })
+
+        .catch(function() {
+            console.log("223");
+        });
+
+    // make call
+    const call = new Stringee.StringeeCall(stringeeClient, "02473111888", "0986886668");
+    call.makeCall();
+
+    //
+    stringeeClient.disconnect();
+</script>
+</html>
