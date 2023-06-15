@@ -15,7 +15,6 @@ module.exports = {
     entry : {
         voice_call : "./src/voice_call/script.js",
         video_call : "./src/video_call/script.js"
-        // lib        : "./src/latest.npm.sdk.bundle.js"
     },
     resolve : {
         alias : {
