@@ -23,17 +23,19 @@ module.exports = {
     },
     plugins : [
         new HtmlWebpackPlugin({
-            inject   : true,
-            title    : "Index",
-            template : "./src/index.html",
-            filename : "/index.html"
+            inject     : true,
+            publicPath : "/",
+            title      : "Index",
+            template   : "./src/index.html",
+            filename   : "index.html",
+            chunks     : []
         }),
         new HtmlWebpackPlugin({
             inject     : "body",
             publicPath : "/",
             title      : "Voice Call",
             template   : "./src/voice_call/index.html",
-            filename   : "/voice_call.html",
+            filename   : "voice_call.html",
             chunks     : ["voice_call"]
         }),
         new HtmlWebpackPlugin({
